@@ -1,0 +1,35 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-image: linear-gradient(to right top, #743ebe, #6f56cb, #6d6cd5, #6f7fdd, #7691e2, #6ba0eb, #64aef2, #61bbf6, #3cc9fa, #02d6f7, #00e2ee, #37ede0);
+  .main {
+    flex: 1 1 auto;
+  }
+  .content {
+    margin: auto;
+    max-width: 1240px;
+  }
+  .header {
+    font-size: 3rem;
+    text-align: center;
+    font-weight: bold;
+    font-style: italic;
+    padding: 1rem 0;
+    color: white;
+    text-shadow: 4px 2px 2px grey;
+    //background: linear-gradient(45deg, #560b77 33%, #a62ad6 66%, #d216b3);
+    //-webkit-background-clip: text;
+    //-webkit-text-fill-color: transparent;
+    //display: table;
+  }
+  .footer {
+    text-align: right;
+    font-style: italic;
+    font-weight: 100;
+    font-size: .8rem;
+    color: white;
+    padding: .2rem .2rem .1rem 0;
+    background-image: linear-gradient(30deg, #743ebe, #9504a747);
+  }
+}
