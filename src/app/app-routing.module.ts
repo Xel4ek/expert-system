@@ -9,6 +9,7 @@ const routes: Routes = [
         ({ ExpertModule }) => ExpertModule
       ),
   },
+  { path: '**', redirectTo: '' },
 ];
 
 @NgModule({

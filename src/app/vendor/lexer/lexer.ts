@@ -14,9 +14,9 @@ export class Lexer {
         str.replace(/\s+/g, '').replace(/<=>/g, '⇔').replace(/=>/g, '→')
       );
   }
-  static tokenize<T extends ASTNode>(source: string): T {
-    const stack: string[] = [];
-
-    throw new Error('No implement yet');
-  }
+  // static tokenize<T extends ASTNode>(source: string): T {
+  //   const stack: string[] = [];
+  //
+  //   throw new Error('No implement yet');
+  // }
 }

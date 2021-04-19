@@ -3,6 +3,7 @@ import { EMPTY, fromEvent, Observable, Subscription } from 'rxjs';
 import { first, map } from 'rxjs/operators';
 import { Lexer } from '@vendor/lexer/lexer';
 import { Token } from '@vendor/lexer/token';
+import { ShuntingYard } from '@vendor/shunting-yard/shunting-yard';
 
 @Component({
   selector: 'app-welcome',
@@ -10,7 +11,7 @@ import { Token } from '@vendor/lexer/token';
   styleUrls: ['./welcome.component.scss'],
 })
 export class WelcomeComponent implements OnInit {
-  test$?: Observable<Token[][]>;
+  test$?: Observable<string[]>;
   constructor() {}
 
   ngOnInit(): void {}
@@ -29,7 +30,12 @@ export class WelcomeComponent implements OnInit {
           }
           return binary;
         }),
-        map((data) => Lexer.prepare(data).map((str) => Token.tokenize(str)))
+        map((data) =>
+          Lexer.prepare(data)
+            .map((str) => Token.tokenize(str))
+            .map((tokens) => new ShuntingYard(tokens).get())
+            .map((tokens) => tokens.map((token) => token.value).join(' '))
+        )
       );
     });
   }
