@@ -1,7 +1,7 @@
 <div (appOnFileDropped)="uploadFile($event)" appDragAndDrop>Drag file to me plz</div>
-<div *ngFor="let files$ of test$; index as index">
-  <div> Uploaded file # {{index}}</div>
+<div *ngFor="let files of test$ | async; index as index">
+  <div> Sting # {{index}} from file</div>
   <pre>
-    {{ files$ | async }}
+    {{ files | json}}
   </pre>
 </div>

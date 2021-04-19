@@ -4,9 +4,9 @@
   "compilerOptions": {
     "baseUrl": "./src",
     "paths": {
-      "@vendor/*": ["vendor/*"],
       "@components/*": ["app/components/*"],
       "@services/*": ["app/services/*"],
+      "@vendor/*": ["app/vendor/*"]
     },
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,

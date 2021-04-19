@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { fromEvent, Observable, Subscription } from 'rxjs';
+import { EMPTY, fromEvent, Observable, Subscription } from 'rxjs';
 import { first, map } from 'rxjs/operators';
+import { Lexer } from '@vendor/lexer/lexer';
+import { Token } from '@vendor/lexer/token';
 
 @Component({
   selector: 'app-welcome',
@@ -8,7 +10,7 @@ import { first, map } from 'rxjs/operators';
   styleUrls: ['./welcome.component.scss'],
 })
 export class WelcomeComponent implements OnInit {
-  test$: Observable<string>[] = [];
+  test$?: Observable<Token[][]>;
   constructor() {}
 
   ngOnInit(): void {}
@@ -16,7 +18,7 @@ export class WelcomeComponent implements OnInit {
     Array.from(files).map((file) => {
       const reader = new FileReader();
       reader.readAsArrayBuffer(file);
-      const data$ = fromEvent(reader, 'load').pipe(
+      this.test$ = fromEvent(reader, 'load').pipe(
         first(),
         map((result) => {
           let binary = '';
@@ -26,9 +28,9 @@ export class WelcomeComponent implements OnInit {
             binary += String.fromCharCode(bytes[i]);
           }
           return binary;
-        })
+        }),
+        map((data) => Lexer.prepare(data).map((str) => Token.tokenize(str)))
       );
-      this.test$.push(data$);
     });
   }
 }
