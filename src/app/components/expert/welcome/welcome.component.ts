@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { EMPTY, fromEvent, Observable, Subscription } from 'rxjs';
-import { first, map } from 'rxjs/operators';
+import {first, map, tap} from 'rxjs/operators';
 import { Lexer } from '@vendor/lexer/lexer';
 import { Token } from '@vendor/lexer/token';
 import { ShuntingYard } from '@vendor/shunting-yard/shunting-yard';
+import {AstBuilderTree} from "@vendor/AST/ast-builder-tree";
 
 @Component({
   selector: 'app-welcome',
@@ -11,7 +12,7 @@ import { ShuntingYard } from '@vendor/shunting-yard/shunting-yard';
   styleUrls: ['./welcome.component.scss'],
 })
 export class WelcomeComponent implements OnInit {
-  test$?: Observable<string[]>;
+  test$?: Observable<Token[][]>;
   constructor() {}
 
   ngOnInit(): void {}
@@ -28,14 +29,18 @@ export class WelcomeComponent implements OnInit {
           for (let i = 0; i < length; i++) {
             binary += String.fromCharCode(bytes[i]);
           }
-          return binary;
+          return binary + '\n';
         }),
         map((data) =>
           Lexer.prepare(data)
             .map((str) => Token.tokenize(str))
             .map((tokens) => new ShuntingYard(tokens).get())
-            .map((tokens) => tokens.map((token) => token.value).join(' '))
-        )
+          //  .map((tokens) => tokens.map((token) => token.value).join(' '))
+        ),
+        tap((tokens) => {
+          const tree = new AstBuilderTree(tokens);
+          console.log(tree.showMe());
+        })
       );
     });
   }

@@ -1,3 +1,5 @@
+import {Controls, Operators} from '@vendor/AST/abstract-syntax-tree-node';
+
 export const enum Tokens {
   Operator = 'operator',
   Literal = 'literal',
@@ -6,13 +8,24 @@ export const enum Tokens {
 }
 
 export class Token {
-  type: Tokens;
-  value: string;
 
-  constructor(type: Tokens, value: string) {
+  constructor(type: Tokens, value: string | Operators | Controls) {
     this.type = type;
     this.value = value;
   }
+
+  private static operatorsType = new Map<string, Operators | Controls>([
+    ['!', Operators.NEGATION],
+    ['+', Operators.AND],
+    ['|', Operators.OR],
+    ['^', Operators.XOR],
+    ['⇔', Operators.EQUIVALENCE],
+    ['→', Operators.IMPLICATION],
+    ['=', Controls.EQUAL],
+    ['?', Controls.QUERY],
+  ]);
+  type: Tokens;
+  value: string | Operators | Controls;
 
   static tokenize(source: string): Token[] {
     return source.split('').map((letter) => {
@@ -41,7 +54,11 @@ export class Token {
       return new Token(Tokens.Operator, letter);
     }
     if (Token.isLeftParenthesis(letter)) {
-      return new Token(Tokens.LeftParenthesis, letter);
+      const value = Token.operatorsType.get(letter);
+      if (!value) {
+        throw new Error('unknown operator token');
+      }
+      return new Token(Tokens.LeftParenthesis, value);
     }
     if (Token.isRightParenthesis(letter)) {
       return new Token(Tokens.RightParenthesis, letter);
