@@ -200,10 +200,9 @@ export class AbstractSyntaxTreeConnector extends AbstractSyntaxTreeNode {
   >([
     [
       Operators.AND,
-      (rhs, lhs) => {
-        const firstLink = new AbstractSyntaxTreeLink(this, lhs);
-        const secondLink = new AbstractSyntaxTreeLink(this, rhs);
-      },
+      (rhs, lhs) =>
+        new AbstractSyntaxTreeLink(this, lhs) &&
+        new AbstractSyntaxTreeLink(this, rhs),
     ],
     // [Operators.NEGATION, (rhs, lhs) =>  {}],
     // [Operators.OR, (rhs, lhs) =>  {}],
@@ -226,7 +225,6 @@ export class AbstractSyntaxTreeConnector extends AbstractSyntaxTreeNode {
     }
   }
   link(link: AbstractSyntaxTreeLink): void {
-    console.warn('trifered ', this);
     this.links.push(link);
   }
 
