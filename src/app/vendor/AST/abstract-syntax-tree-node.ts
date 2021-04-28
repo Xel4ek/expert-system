@@ -225,8 +225,8 @@ export class AbstractSyntaxTreeConnector extends AbstractSyntaxTreeNode {
       generator(rhs, lhs);
     }
   }
-
   link(link: AbstractSyntaxTreeLink): void {
+    console.warn('trifered ', this);
     this.links.push(link);
   }
 

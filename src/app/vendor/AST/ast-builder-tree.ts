@@ -62,29 +62,9 @@ export class AstBuilderTree {
             stack.push(nextOne);
           }
         }
-        // const secondToken = tokens.pop();
-        // const operatorToken = tokens.pop();
-        // console.log(firstToken, secondToken, operatorToken);
-        // if (
-        //   firstToken &&
-        //   secondToken &&
-        //   this.uniqueAtomNodes.has(firstToken.value) &&
-        //   this.uniqueAtomNodes.has(secondToken.value) &&
-        //   operatorToken
-        // ) {
-        //   const firstNode = this.uniqueAtomNodes.get(firstToken.value);
-        //   const secondNode = this.uniqueAtomNodes.get(secondToken.value);
-        //   if (firstNode && secondNode) {
-        //     const root = new AbstractSyntaxTreeConnector(
-        //       operatorToken.value as Operators,
-        //       firstNode,
-        //       secondNode
-        //     );
-        //     console.log(root);
-        //   }
-        // const operatorNode = new AbstractSyntaxTreeConnector();
       }
     }
+    console.log(stack);
   }
 }
 // }
