@@ -11,60 +11,53 @@ export enum Operators {
 
 export enum Controls {
   EQUAL = '=',
-  QUERY = '?'
+  QUERY = '?',
 }
 
 export abstract class AbstractSyntaxTreeNode {
+  type: NodeType;
 
-  constructor(
-    type: NodeType
-  ) {
+  constructor(type: NodeType) {
     this.type = type;
   }
 
-  type: NodeType;
-
-  protected links: AbstractSyntaxTreeLink[] = [];
-
   abstract resolve(): boolean | undefined | null;
-
-  protected abstract setValue(value: boolean): void;
-
-  link(link: AbstractSyntaxTreeLink): void {
-    this.links.push(link);
-  }
 }
 
 export class AbstractSyntaxTreeLink extends AbstractSyntaxTreeNode {
-  // private parentNode?: AbstractSyntaxTreeConnector;
-  private childNode?: AbstractSyntaxTreeAtom | AbstractSyntaxTreeConnector;
+  private readonly childNode:
+    | AbstractSyntaxTreeAtom
+    | AbstractSyntaxTreeConnector;
 
   constructor(
-    // private readonly parentNode: AbstractSyntaxTreeConnector,
-    // private readonly childNode: AbstractSyntaxTreeAtom | AbstractSyntaxTreeConnector
+    parentNode: AbstractSyntaxTreeAtom | AbstractSyntaxTreeConnector,
+    childNode: AbstractSyntaxTreeAtom | AbstractSyntaxTreeConnector
   ) {
     super('link');
-  }
-
-  resolve(): boolean | undefined | null {
-    if (!this.childNode) {
-      throw new Error('unlinked');
-    }
-    return this.childNode.resolve();
-  }
-
-  protected setValue(value: boolean): void {
-    throw new Error('can not set value ' + value + 'in AbstractSyntaxTreeLink class');
-  }
-
-  public link(parentNode: AbstractSyntaxTreeConnector, childNode: AbstractSyntaxTreeAtom | AbstractSyntaxTreeConnector): void {
     parentNode.link(this);
     this.childNode = childNode;
   }
+
+  resolve(): boolean | undefined | null {
+    // if (!this.childNode) {
+    //   throw new Error('unlinked');
+    // }
+    return this.childNode.resolve();
+  }
+
+  // public link(
+  //   parentNode: AbstractSyntaxTreeAtom | AbstractSyntaxTreeConnector,
+  //   childNode: AbstractSyntaxTreeAtom | AbstractSyntaxTreeConnector
+  // ): void {
+  //   parentNode.link(this);
+  //   this.childNode = childNode;
+  // }
 }
 
-export class AbstractSyntaxTreeAtom extends AbstractSyntaxTreeNode {  // факт
-  private possibilities: (boolean | AbstractSyntaxTreeLink)[] = [];
+export class AbstractSyntaxTreeAtom extends AbstractSyntaxTreeNode {
+  // факт
+
+  protected links: AbstractSyntaxTreeLink[] = [];
 
   constructor() {
     super('fact');
@@ -72,8 +65,9 @@ export class AbstractSyntaxTreeAtom extends AbstractSyntaxTreeNode {  // фак�
 
   resolve(): boolean | undefined | null {
     let result;
-    for (const possibility of this.possibilities) {
-      const value = typeof possibility === 'boolean' ? possibility : possibility.resolve();
+    for (const possibility of this.links) {
+      const value = possibility.resolve();
+      // false ? possibility : possibility.resolve();
       if (value === undefined || value === null) {
         continue;
       }
@@ -87,33 +81,35 @@ export class AbstractSyntaxTreeAtom extends AbstractSyntaxTreeNode {  // фак�
     return result;
   }
 
-  protected setValue(value: boolean | AbstractSyntaxTreeLink): void {
-    this.possibilities.push(value);
+  link(link: AbstractSyntaxTreeLink): void {
+    this.links.push(link);
   }
-
 }
 
-export class AbstractSyntaxTreeConnector extends AbstractSyntaxTreeNode { // оператор
-  constructor(
-    private readonly operand: Operators,
-    private readonly firstChild: AbstractSyntaxTreeLink,
-    private readonly secondChild?: AbstractSyntaxTreeLink
-  ) {
-    super('operand');
-  }
-
-  private operatorsResolve = new Map<Operators, () => boolean | undefined | null>([
-      [Operators.NEGATION, () => {
-        const result = this.firstChild.resolve();
+export class AbstractSyntaxTreeConnector extends AbstractSyntaxTreeNode {
+  // оператор
+  links: AbstractSyntaxTreeLink[] = [];
+  private operatorsResolve = new Map<
+    Operators,
+    () => boolean | undefined | null
+  >([
+    [
+      Operators.NEGATION,
+      () => {
+        const [firstChild] = this.links;
+        const result = firstChild.resolve();
         if (typeof result === 'boolean') {
           return !result;
         }
         return result;
-      }],
-      [Operators.AND, () => {
-        const firstResult = this.firstChild.resolve();
-        const secondResult = this.secondChild?.resolve();
-
+      },
+    ],
+    [
+      Operators.AND,
+      () => {
+        const [firstResult, secondResult] = this.links.map((child) =>
+          child.resolve()
+        );
         if (firstResult && secondResult) {
           return true;
         }
@@ -124,10 +120,14 @@ export class AbstractSyntaxTreeConnector extends AbstractSyntaxTreeNode { // о�
           return undefined;
         }
         return false;
-      }],
-      [Operators.OR, () => {
-        const firstResult = this.firstChild.resolve();
-        const secondResult = this.secondChild?.resolve();
+      },
+    ],
+    [
+      Operators.OR,
+      () => {
+        const [firstResult, secondResult] = this.links.map((child) =>
+          child.resolve()
+        );
 
         if (firstResult === null || secondResult === null) {
           return null;
@@ -136,10 +136,14 @@ export class AbstractSyntaxTreeConnector extends AbstractSyntaxTreeNode { // о�
           return undefined;
         }
         return firstResult || secondResult;
-      }],
-      [Operators.XOR, () => {
-        const firstResult = this.firstChild.resolve();
-        const secondResult = this.secondChild?.resolve();
+      },
+    ],
+    [
+      Operators.XOR,
+      () => {
+        const [firstResult, secondResult] = this.links.map((child) =>
+          child.resolve()
+        );
 
         if (firstResult === null || secondResult === null) {
           return null;
@@ -148,10 +152,14 @@ export class AbstractSyntaxTreeConnector extends AbstractSyntaxTreeNode { // о�
           return undefined;
         }
         return !(firstResult && secondResult);
-      }],
-      [Operators.EQUIVALENCE, () => {
-        const firstResult = this.firstChild.resolve();
-        const secondResult = this.secondChild?.resolve();
+      },
+    ],
+    [
+      Operators.EQUIVALENCE,
+      () => {
+        const [firstResult, secondResult] = this.links.map((child) =>
+          child.resolve()
+        );
 
         if (firstResult === null || secondResult === null) {
           return null;
@@ -160,10 +168,18 @@ export class AbstractSyntaxTreeConnector extends AbstractSyntaxTreeNode { // о�
           return undefined;
         }
         return (firstResult && secondResult) || (!firstResult && !secondResult);
-      }],
-      [Operators.IMPLICATION, () => {
-        const firstResult = this.firstChild.resolve();
-        const secondResult = this.secondChild?.resolve();
+      },
+    ],
+    /**
+     * TODO
+     * Сдесь помоему ошибка в возвращаемом резульатте (совпадает  с перрыдущем) для ложного не должно быть верно
+     */
+    [
+      Operators.IMPLICATION,
+      () => {
+        const [firstResult, secondResult] = this.links.map((child) =>
+          child.resolve()
+        );
 
         if (firstResult === null || secondResult === null) {
           return null;
@@ -172,28 +188,53 @@ export class AbstractSyntaxTreeConnector extends AbstractSyntaxTreeNode { // о�
           return undefined;
         }
         return (firstResult && secondResult) || (!firstResult && !secondResult);
-      }]
-    ]
-  );
+      },
+    ],
+  ]);
+  private linkGenerator = new Map<
+    Operators,
+    (
+      rhs: AbstractSyntaxTreeAtom | AbstractSyntaxTreeConnector,
+      lhs: AbstractSyntaxTreeAtom | AbstractSyntaxTreeConnector
+    ) => void
+  >([
+    [
+      Operators.AND,
+      (rhs, lhs) => {
+        const firstLink = new AbstractSyntaxTreeLink(this, lhs);
+        const secondLink = new AbstractSyntaxTreeLink(this, rhs);
+      },
+    ],
+    // [Operators.NEGATION, (rhs, lhs) =>  {}],
+    // [Operators.OR, (rhs, lhs) =>  {}],
+    // [Operators.XOR, (rhs, lhs) =>  {}],
+    // [Operators.EQUIVALENCE, (rhs, lhs) =>  {}],
+    // [Operators.IMPLICATION, (rhs, lhs) =>  {}],
+  ]);
 
-  // private connectorGenerator = new Map<Operators, (rhs: AbstractSyntaxTreeAtom | AbstractSyntaxTreeConnector, lhs: AbstractSyntaxTreeAtom | AbstractSyntaxTreeConnector) => AbstractSyntaxTreeConnector>([
-  //     [Operators.OR, (rhs, lhs) => {
-  //
-  //     }],
-  //   ]
-  // );
+  // private readonly firstChild: AbstractSyntaxTreeLink, // private readonly secondChild?: AbstractSyntaxTreeLink
 
-  resolve():
-    boolean | undefined | null {
+  constructor(
+    private readonly operand: Operators,
+    rhs: AbstractSyntaxTreeAtom | AbstractSyntaxTreeConnector,
+    lhs: AbstractSyntaxTreeAtom | AbstractSyntaxTreeConnector
+  ) {
+    super('operand');
+    const generator = this.linkGenerator.get(operand);
+    if (generator) {
+      generator(rhs, lhs);
+    }
+  }
+
+  link(link: AbstractSyntaxTreeLink): void {
+    this.links.push(link);
+  }
+
+  resolve(): boolean | undefined | null {
     const resolver = this.operatorsResolve.get(this.operand);
     if (!resolver) {
-      throw new Error('unknown operator');
+      throw new Error('Unknown operator');
     }
     return resolver();
   }
-
-  protected setValue(value: boolean): void {
-    throw new Error('can not set value by AbstractSyntaxTreeConnector class');
-  }
 }
-

@@ -15,7 +15,7 @@ export class DragAndDropDirective {
   @HostBinding('style.background-color') private background = '#f5fcff';
   @HostBinding('style.opacity') private opacity = '1';
 
-  @HostListener('dragover', ['$event'])
+  @HostListener('document:dragover', ['$event'])
   onDragOver(evt: Event): void {
     evt.preventDefault();
     evt.stopPropagation();
@@ -23,7 +23,7 @@ export class DragAndDropDirective {
     this.opacity = '0.8';
   }
 
-  @HostListener('dragleave', ['$event'])
+  @HostListener('document:dragleave', ['$event'])
   public onDragLeave(evt: Event): void {
     evt.preventDefault();
     evt.stopPropagation();
@@ -31,7 +31,7 @@ export class DragAndDropDirective {
     this.opacity = '1';
   }
 
-  @HostListener('drop', ['$event'])
+  @HostListener('document:drop', ['$event'])
   public ondrop(evt: DragEvent): void {
     evt.preventDefault();
     evt.stopPropagation();

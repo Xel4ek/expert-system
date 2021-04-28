@@ -27,10 +27,11 @@ export class GraphComponent implements OnInit {
         data: this.data,
         force: {
           // initLayout: 'circular'
-          // gravity: 0
+          gravity: 0.2,
           repulsion: 100,
           edgeLength: 5,
         },
+        draggable: true,
         edges: this.edges,
       },
     ],
