@@ -89,6 +89,11 @@ export class AbstractSyntaxTreeAtom extends AbstractSyntaxTreeNode {
   link(link: AbstractSyntaxTreeLink): void {
     this.links.push(link);
   }
+
+  //TODO если значение на атом ноде то setVаlue в базовый класс
+  //уникальный тип ссылкы который возвращает true / false
+  //для коннектора  и атом ноды
+
 }
 
 export class AbstractSyntaxTreeConnector extends AbstractSyntaxTreeNode {
@@ -194,7 +199,7 @@ export class AbstractSyntaxTreeConnector extends AbstractSyntaxTreeNode {
     //     }
     //     return (firstResult && secondResult) || (!firstResult && !secondResult);
     //   },
-    // ],
+    // ],ссылки между правым и левым  TODO
   ]);
   private linkGenerator = new Map<
     Operators | Controls,

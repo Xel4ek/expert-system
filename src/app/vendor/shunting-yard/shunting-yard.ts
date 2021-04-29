@@ -1,4 +1,4 @@
-import { Token, Tokens } from '@vendor/lexer/token';
+import {Token, Tokens} from '@vendor/lexer/token';
 
 export class ShuntingYard {
   private static operatorsOrder = new Map<string, number>([
@@ -11,8 +11,13 @@ export class ShuntingYard {
     ['=', 3],
     ['?', 2],
   ]);
+
   constructor(private readonly source: Token[]) {
+    let checkControl = false;
     for (const token of source) {
+      if (token.value === '⇔' || token.value === '→') {
+        checkControl = true;
+      }
       switch (token.type) {
         case Tokens.Literal:
           this.output.push(token);
@@ -47,12 +52,17 @@ export class ShuntingYard {
           throw new Error('Broken Token');
       }
     }
+    if (!checkControl) {
+      throw new Error('controller missing\n');
+    }
     for (let token = this.stack.pop(); token; token = this.stack.pop()) {
       this.output.push(token);
     }
   }
+
   private readonly stack: Token[] = [];
   private readonly output: Token[] = [];
+
   private static compareOperators(lhs: Token, rhs: Token): boolean {
     const [lPriority, rPriority] = [
       ShuntingYard.operatorsOrder.get(lhs.value),
@@ -63,6 +73,7 @@ export class ShuntingYard {
     }
     return lPriority >= rPriority;
   }
+
   get(): Token[] {
     return this.output;
   }
