@@ -1,4 +1,4 @@
-import {Controls, Operators} from '@vendor/AST/abstract-syntax-tree-node';
+import { Controls, Operators } from '@vendor/AST/abstract-syntax-tree-node';
 
 export const enum Tokens {
   Operator = 'operator',
@@ -8,7 +8,6 @@ export const enum Tokens {
 }
 
 export class Token {
-
   constructor(type: Tokens, value: string | Operators | Controls) {
     this.type = type;
     this.value = value;
@@ -19,8 +18,8 @@ export class Token {
     ['+', Operators.AND],
     ['|', Operators.OR],
     ['^', Operators.XOR],
-    ['⇔', Operators.EQUIVALENCE],
-    ['→', Operators.IMPLICATION],
+    ['⇔', Controls.EQUIVALENCE],
+    ['→', Controls.IMPLICATION],
     ['=', Controls.EQUAL],
     ['?', Controls.QUERY],
   ]);
@@ -51,14 +50,13 @@ export class Token {
 
   private static getToken(letter: string): Token {
     if (Token.ifOperator(letter)) {
-      return new Token(Tokens.Operator, letter);
+      const value = Token.operatorsType.get(letter);
+      if (value) {
+        return new Token(Tokens.Operator, value);
+      }
     }
     if (Token.isLeftParenthesis(letter)) {
-      const value = Token.operatorsType.get(letter);
-      if (!value) {
-        throw new Error('unknown operator token');
-      }
-      return new Token(Tokens.LeftParenthesis, value);
+      return new Token(Tokens.LeftParenthesis, letter);
     }
     if (Token.isRightParenthesis(letter)) {
       return new Token(Tokens.RightParenthesis, letter);

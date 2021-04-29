@@ -1,6 +1,7 @@
 import {
   AbstractSyntaxTreeAtom,
   AbstractSyntaxTreeConnector,
+  Controls,
   Operators,
 } from '@vendor/AST/abstract-syntax-tree-node';
 import { Token, Tokens } from '@vendor/lexer/token';
@@ -32,7 +33,10 @@ export class AstBuilderTree {
       for (const token of tokens) {
         if (token.type === Tokens.Literal) {
           if (!this.uniqueAtomNodes.has(token.value)) {
-            this.uniqueAtomNodes.set(token.value, new AbstractSyntaxTreeAtom());
+            this.uniqueAtomNodes.set(
+              token.value,
+              new AbstractSyntaxTreeAtom(token)
+            );
           }
         }
       }

@@ -1,3 +1,5 @@
+import { Token, Tokens } from '@vendor/lexer/token';
+
 export type NodeType = 'link' | 'operand' | 'fact';
 
 export enum Operators {
@@ -5,11 +7,13 @@ export enum Operators {
   AND = '+',
   OR = '|',
   XOR = '^',
-  EQUIVALENCE = '⇔',
-  IMPLICATION = '→',
+
+  // EMPTY = '∅',
 }
 
 export enum Controls {
+  EQUIVALENCE = '⇔',
+  IMPLICATION = '→',
   EQUAL = '=',
   QUERY = '?',
 }
@@ -56,11 +60,12 @@ export class AbstractSyntaxTreeLink extends AbstractSyntaxTreeNode {
 
 export class AbstractSyntaxTreeAtom extends AbstractSyntaxTreeNode {
   // факт
-
+  value: Operators | string;
   protected links: AbstractSyntaxTreeLink[] = [];
 
-  constructor() {
+  constructor(token: Token) {
     super('fact');
+    this.value = token.value;
   }
 
   resolve(): boolean | undefined | null {
@@ -154,45 +159,45 @@ export class AbstractSyntaxTreeConnector extends AbstractSyntaxTreeNode {
         return !(firstResult && secondResult);
       },
     ],
-    [
-      Operators.EQUIVALENCE,
-      () => {
-        const [firstResult, secondResult] = this.links.map((child) =>
-          child.resolve()
-        );
-
-        if (firstResult === null || secondResult === null) {
-          return null;
-        }
-        if (firstResult === undefined || secondResult === undefined) {
-          return undefined;
-        }
-        return (firstResult && secondResult) || (!firstResult && !secondResult);
-      },
-    ],
-    /**
-     * TODO
-     * Сдесь помоему ошибка в возвращаемом резульатте (совпадает  с перрыдущем) для ложного не должно быть верно
-     */
-    [
-      Operators.IMPLICATION,
-      () => {
-        const [firstResult, secondResult] = this.links.map((child) =>
-          child.resolve()
-        );
-
-        if (firstResult === null || secondResult === null) {
-          return null;
-        }
-        if (firstResult === undefined || secondResult === undefined) {
-          return undefined;
-        }
-        return (firstResult && secondResult) || (!firstResult && !secondResult);
-      },
-    ],
+    // [
+    //   Operators.EQUIVALENCE,
+    //   () => {
+    //     const [firstResult, secondResult] = this.links.map((child) =>
+    //       child.resolve()
+    //     );
+    //
+    //     if (firstResult === null || secondResult === null) {
+    //       return null;
+    //     }
+    //     if (firstResult === undefined || secondResult === undefined) {
+    //       return undefined;
+    //     }
+    //     return (firstResult && secondResult) || (!firstResult && !secondResult);
+    //   },
+    // ],
+    // /**
+    //  * TODO
+    //  * Сдесь помоему ошибка в возвращаемом резульатте (совпадает  с перрыдущем) для ложного не должно быть верно
+    //  */
+    // [
+    //   Operators.IMPLICATION,
+    //   () => {
+    //     const [firstResult, secondResult] = this.links.map((child) =>
+    //       child.resolve()
+    //     );
+    //
+    //     if (firstResult === null || secondResult === null) {
+    //       return null;
+    //     }
+    //     if (firstResult === undefined || secondResult === undefined) {
+    //       return undefined;
+    //     }
+    //     return (firstResult && secondResult) || (!firstResult && !secondResult);
+    //   },
+    // ],
   ]);
   private linkGenerator = new Map<
-    Operators,
+    Operators | Controls,
     (
       rhs: AbstractSyntaxTreeAtom | AbstractSyntaxTreeConnector,
       lhs: AbstractSyntaxTreeAtom | AbstractSyntaxTreeConnector
@@ -204,11 +209,33 @@ export class AbstractSyntaxTreeConnector extends AbstractSyntaxTreeNode {
         new AbstractSyntaxTreeLink(this, lhs) &&
         new AbstractSyntaxTreeLink(this, rhs),
     ],
-    // [Operators.NEGATION, (rhs, lhs) =>  {}],
-    // [Operators.OR, (rhs, lhs) =>  {}],
-    // [Operators.XOR, (rhs, lhs) =>  {}],
-    // [Operators.EQUIVALENCE, (rhs, lhs) =>  {}],
-    // [Operators.IMPLICATION, (rhs, lhs) =>  {}],
+    [Operators.NEGATION, (rhs, lhs) => new AbstractSyntaxTreeLink(this, rhs)],
+    [
+      Operators.OR,
+      (rhs, lhs) =>
+        new AbstractSyntaxTreeLink(this, rhs) ||
+        new AbstractSyntaxTreeLink(this, lhs),
+    ],
+    [
+      Operators.XOR,
+      (rhs, lhs) =>
+        !new AbstractSyntaxTreeLink(this, rhs) &&
+        !new AbstractSyntaxTreeLink(this, rhs),
+    ],
+    [
+      Controls.EQUIVALENCE,
+      (rhs, lhs) =>
+        new AbstractSyntaxTreeLink(this, rhs) &&
+        new AbstractSyntaxTreeLink(this, lhs) &&
+        new AbstractSyntaxTreeLink(lhs, this) &&
+        new AbstractSyntaxTreeLink(rhs, this),
+    ],
+    [
+      Controls.IMPLICATION,
+      (rhs, lhs) =>
+        new AbstractSyntaxTreeLink(this, lhs) &&
+        new AbstractSyntaxTreeLink(rhs, this),
+    ],
   ]);
 
   // private readonly firstChild: AbstractSyntaxTreeLink, // private readonly secondChild?: AbstractSyntaxTreeLink
