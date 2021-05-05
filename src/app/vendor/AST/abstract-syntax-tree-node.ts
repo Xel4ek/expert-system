@@ -62,38 +62,36 @@ export class AbstractSyntaxTreeAtom extends AbstractSyntaxTreeNode {
   // факт
   value: Operators | string;
   protected links: AbstractSyntaxTreeLink[] = [];
-
+  private result = false;
   constructor(token: Token) {
     super('fact');
     this.value = token.value;
   }
 
   resolve(): boolean | undefined | null {
-    let result;
     for (const possibility of this.links) {
       const value = possibility.resolve();
       // false ? possibility : possibility.resolve();
       if (value === undefined || value === null) {
         continue;
       }
-      if (result === undefined) {
-        result = value;
-      }
-      if (result !== value) {
-        throw new Error('logical error in ' + possibility);
+      if (value) {
+        this.result = value;
+        return this.result;
       }
     }
-    return result;
+    return this.result;
   }
 
   link(link: AbstractSyntaxTreeLink): void {
     this.links.push(link);
   }
-
+  setValue(value = true): void {
+    this.result = value;
+  }
   //TODO если значение на атом ноде то setVаlue в базовый класс
   //уникальный тип ссылкы который возвращает true / false
   //для коннектора  и атом ноды
-
 }
 
 export class AbstractSyntaxTreeConnector extends AbstractSyntaxTreeNode {
